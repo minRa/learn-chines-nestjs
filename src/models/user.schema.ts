@@ -3,10 +3,28 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { Document, SchemaOptions } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import * as t from '../utils/io-ts-ext';
 
 const options: SchemaOptions = {
   timestamps: true,
 };
+
+export const userReadOnly = t.type({
+  id: t.string,
+  email: t.string,
+  name: t.string,
+  imgUrl: t.string,
+});
+export type userReadOnly = t.TypeOf<typeof userReadOnly>;
+
+export const UserType = t.type({
+  email: t.string,
+  name: t.string,
+  password: t.string,
+  imgUrl: t.string,
+  readOnlyData: userReadOnly,
+});
+export type UserType = t.TypeOf<typeof UserType>;
 
 @Schema(options)
 export class User extends Document {
@@ -54,18 +72,12 @@ export class User extends Document {
   @IsString()
   imgUrl: string;
 
-  readonly readOnlyData: {
-    id: string;
-    email: string;
-    name: string;
-    imgUrl: string;
-    // comments: Comments[];
-  };
+  readonly readOnlyData: userReadOnly;
 
   //   readonly comments: Comments[];
 }
 
-const _UserSchema = SchemaFactory.createForClass(User);
+const _UserSchema = SchemaFactory.createForClass<UserType>(User);
 
 _UserSchema.virtual('readOnlyData').get(function (this: User) {
   return {
