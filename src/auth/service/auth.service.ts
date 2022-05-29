@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersRepository } from '../auth.repository';
 import { UserRequestDto } from '../dto/auth.request.dto';
 import { JwtService } from '@nestjs/jwt';
+import { User, userReadOnly } from '../../models/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -11,7 +12,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(body: UserRequestDto) {
+  async signUp(body: UserRequestDto): Promise<userReadOnly> {
     const { email, password } = body;
     const isCatExist = await this.userRepository.existsByEmail(email);
     if (isCatExist) {
@@ -28,7 +29,11 @@ export class AuthService {
     return user.readOnlyData;
   }
 
-  async jwtLogIn(data: UserRequestDto) {
+  async getAllUsers(): Promise<User[]> {
+    return await this.userRepository.findAll();
+  }
+
+  async jwtLogIn(data: UserRequestDto): Promise<{ token: string }> {
     const { email, password } = data;
 
     //* 해당하는 email이 있는지

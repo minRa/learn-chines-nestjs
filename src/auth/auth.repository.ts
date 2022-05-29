@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User } from '../models/user.schema';
+import { User, userReadOnly } from '../models/user.schema';
 import { UserRequestDto } from './dto/auth.request.dto';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class UsersRepository {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
-  async findAll() {
+  async findAll(): Promise<User[]> {
     // const CommentsModel = mongoose.model('comments', CommentsSchema);
 
     const result = await this.userModel.find();
@@ -19,14 +19,16 @@ export class UsersRepository {
     return result;
   }
 
-  async findByIdAndUpdateImg(id: string, fileName: string) {
+  async findByIdAndUpdateImg(
+    id: string,
+    fileName: string,
+  ): Promise<userReadOnly> {
     const user = await this.userModel.findById(id);
 
     user.imgUrl = `http://localhost:8000/media/${fileName}`;
 
     const newUser = await user.save();
 
-    console.log(newUser);
     return newUser.readOnlyData;
   }
 
@@ -44,7 +46,6 @@ export class UsersRepository {
 
   async existsByEmail(email: string): Promise<any> {
     const result = await this.userModel.exists({ email });
-    console.log('i am here ??', result);
     return result;
   }
 
